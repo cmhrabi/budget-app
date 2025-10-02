@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useUser } from '@auth0/nextjs-auth0/client'
+import { useUser } from '@auth0/nextjs-auth0'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
 
@@ -11,14 +11,14 @@ interface LogoutButtonProps extends Omit<ButtonProps, 'onClick' | 'disabled'> {
   confirmMessage?: string
 }
 
-export function LogoutButton({ 
-  children = 'Log Out', 
+export function LogoutButton({
+  children = 'Log Out',
   className,
   variant = 'ghost',
   size = 'default',
   showConfirmation = true,
   confirmMessage = 'Are you sure you want to log out?',
-  ...props 
+  ...props
 }: LogoutButtonProps) {
   const { user, isLoading, error } = useUser()
 
@@ -29,7 +29,7 @@ export function LogoutButton({
         return
       }
     }
-    
+
     window.location.assign('/api/auth/logout')
   }
 

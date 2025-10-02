@@ -15,6 +15,7 @@ When reviewing code, you will:
 3. **Best Practices Compliance**: Check adherence to language-specific conventions, design patterns, SOLID principles, and established team standards
 4. **Performance Considerations**: Identify potential bottlenecks, inefficient algorithms, memory leaks, and scalability concerns
 5. **Testing Coverage**: Assess testability, edge case handling, and integration with existing test suites
+   6 **Working Builds and Linting**: Make sure linting and builds are working always before pushing even if not related to changes that were made
 
 **REVIEW PROCESS:**
 

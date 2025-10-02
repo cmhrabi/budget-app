@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useUser } from '@auth0/nextjs-auth0/client'
+import { useUser } from '@auth0/nextjs-auth0'
 import { cn } from '@/lib/utils'
 import { DropdownMenu } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
@@ -16,26 +16,21 @@ interface UserMenuProps {
   onSettingsClick?: () => void
 }
 
-export function UserMenu({ 
+export function UserMenu({
   className,
   compact = false,
   showOptions = ['profile', 'settings'],
   onProfileClick,
-  onSettingsClick
+  onSettingsClick,
 }: UserMenuProps) {
   const { user, isLoading, error } = useUser()
   const [isOpen, setIsOpen] = useState(false)
 
   if (isLoading) {
     return (
-      <div 
-        className={cn("flex items-center gap-2", className)}
-        data-testid="user-menu-skeleton"
-      >
+      <div className={cn('flex items-center gap-2', className)} data-testid="user-menu-skeleton">
         <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-        {!compact && (
-          <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-        )}
+        {!compact && <div className="h-4 w-24 bg-muted animate-pulse rounded" />}
       </div>
     )
   }
@@ -73,10 +68,7 @@ export function UserMenu({
   const trigger = (
     <Button
       variant="ghost"
-      className={cn(
-        "flex items-center gap-2 p-2",
-        compact ? "h-auto" : "h-auto px-3 py-2"
-      )}
+      className={cn('flex items-center gap-2 p-2', compact ? 'h-auto' : 'h-auto px-3 py-2')}
       data-testid="user-menu-trigger"
       aria-haspopup="true"
       aria-expanded={isOpen}
@@ -92,12 +84,10 @@ export function UserMenu({
           {initials}
         </div>
       )}
-      
+
       {!compact && (
         <>
-          <span className="text-sm font-medium truncate max-w-32">
-            {displayName}
-          </span>
+          <span className="text-sm font-medium truncate max-w-32">{displayName}</span>
           <ChevronDown className="h-4 w-4" />
         </>
       )}
@@ -105,10 +95,7 @@ export function UserMenu({
   )
 
   return (
-    <div 
-      className={cn("relative", className)}
-      data-testid="user-menu"
-    >
+    <div className={cn('relative', className)} data-testid="user-menu">
       <DropdownMenu
         trigger={trigger}
         open={isOpen}
@@ -132,7 +119,7 @@ export function UserMenu({
               Profile
             </button>
           )}
-          
+
           {showOptions.includes('settings') && (
             <button
               className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm"
@@ -142,9 +129,9 @@ export function UserMenu({
               Settings
             </button>
           )}
-          
+
           <hr className="my-1" />
-          
+
           <button
             className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-sm text-red-600 hover:text-red-700"
             onClick={handleLogoutClick}
@@ -160,25 +147,25 @@ export function UserMenu({
 
 function getInitials(name: string): string {
   if (!name) return 'U'
-  
+
   // Handle email addresses
   if (name.includes('@')) {
     const [localPart] = name.split('@')
     const parts = localPart.split(/[._-]/)
     return parts
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('')
   }
-  
+
   // Handle regular names
   const parts = name.trim().split(/\s+/)
   if (parts.length === 1) {
     return parts[0].charAt(0).toUpperCase()
   }
-  
+
   return parts
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join('')
 }

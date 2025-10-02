@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useUser } from '@auth0/nextjs-auth0/client'
+import { useUser } from '@auth0/nextjs-auth0'
 import { cn } from '@/lib/utils'
-import { User } from 'lucide-react'
 
 interface UserProfileProps {
   className?: string
@@ -12,23 +11,19 @@ interface UserProfileProps {
   showEmail?: boolean
 }
 
-export function UserProfile({ 
+export function UserProfile({
   className,
   compact = false,
   showAvatar = true,
-  showEmail = true
+  showEmail = true,
 }: UserProfileProps) {
   const { user, isLoading, error } = useUser()
   const [imageError, setImageError] = useState(false)
 
   if (isLoading) {
     return (
-      <div 
-        className={cn(
-          "flex items-center gap-3 p-3",
-          compact ? "flex-row" : "flex-col",
-          className
-        )}
+      <div
+        className={cn('flex items-center gap-3 p-3', compact ? 'flex-row' : 'flex-col', className)}
         data-testid="user-profile-skeleton"
       >
         <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
@@ -54,10 +49,10 @@ export function UserProfile({
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "flex items-center gap-3 p-3",
-        compact ? "flex-row" : "flex-col text-center",
+        'flex items-center gap-3 p-3',
+        compact ? 'flex-row' : 'flex-col text-center',
         className
       )}
       data-testid="user-profile"
@@ -72,7 +67,7 @@ export function UserProfile({
               onError={handleImageError}
             />
           ) : (
-            <div 
+            <div
               className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium"
               data-testid="fallback-avatar"
             >
@@ -81,9 +76,9 @@ export function UserProfile({
           )}
         </div>
       )}
-      
+
       {!showAvatar && (
-        <div 
+        <div
           className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary"
           data-testid="user-initials"
           aria-label={`User initials: ${initials}`}
@@ -92,18 +87,16 @@ export function UserProfile({
         </div>
       )}
 
-      <div className={cn(
-        "flex flex-col",
-        compact ? "text-left" : "text-center",
-        "min-w-0" // Allows text to truncate
-      )}>
-        <span className="font-medium text-sm text-foreground truncate">
-          {displayName}
-        </span>
+      <div
+        className={cn(
+          'flex flex-col',
+          compact ? 'text-left' : 'text-center',
+          'min-w-0' // Allows text to truncate
+        )}
+      >
+        <span className="font-medium text-sm text-foreground truncate">{displayName}</span>
         {showEmail && user.email && (
-          <span className="text-xs text-muted-foreground truncate">
-            {user.email}
-          </span>
+          <span className="text-xs text-muted-foreground truncate">{user.email}</span>
         )}
       </div>
     </div>
@@ -112,25 +105,25 @@ export function UserProfile({
 
 function getInitials(name: string): string {
   if (!name) return 'U'
-  
+
   // Handle email addresses
   if (name.includes('@')) {
     const [localPart] = name.split('@')
     const parts = localPart.split(/[._-]/)
     return parts
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('')
   }
-  
+
   // Handle regular names
   const parts = name.trim().split(/\s+/)
   if (parts.length === 1) {
     return parts[0].charAt(0).toUpperCase()
   }
-  
+
   return parts
     .slice(0, 2)
-    .map(part => part.charAt(0).toUpperCase())
+    .map((part) => part.charAt(0).toUpperCase())
     .join('')
 }

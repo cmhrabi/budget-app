@@ -125,7 +125,7 @@ export const useAppPreferences = create<AppPreferencesState>()(
         const { userId } = get()
         set({ ...defaultPreferences, userId })
         if (userId) {
-          savePreferencesToStorage(userId, { ...defaultPreferences })
+          savePreferencesToStorage(userId, { ...get() })
         }
       },
     }),
@@ -144,19 +144,21 @@ export const useAppPreferences = create<AppPreferencesState>()(
 function savePreferencesToStorage(userId: string, state: AppPreferencesState) {
   try {
     const key = getUserStorageKey(userId, 'preferences')
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
-      userId: _,
-      setUserId,
-      setDefaultCurrency,
-      setDateFormat,
-      setTheme,
-      setLanguage,
-      updateNotifications,
-      updatePrivacy,
-      resetToDefaults,
-      loadUserPreferences,
+      userId: _userId,
+      setUserId: _setUserId,
+      setDefaultCurrency: _setDefaultCurrency,
+      setDateFormat: _setDateFormat,
+      setTheme: _setTheme,
+      setLanguage: _setLanguage,
+      updateNotifications: _updateNotifications,
+      updatePrivacy: _updatePrivacy,
+      resetToDefaults: _resetToDefaults,
+      loadUserPreferences: _loadUserPreferences,
       ...preferences
     } = state
+    /* eslint-enable @typescript-eslint/no-unused-vars */
     localStorage.setItem(key, JSON.stringify(preferences))
   } catch (error) {
     console.error('Failed to save user preferences:', error)

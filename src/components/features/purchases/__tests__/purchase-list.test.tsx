@@ -1,5 +1,5 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react'
-import { render, mockPurchases, mockUsePurchases, expectToBeVisible } from '@/__tests__/utils/test-utils'
+import { screen, fireEvent } from '@testing-library/react'
+import { render, mockPurchases, mockUsePurchases } from '@/__tests__/utils/test-utils'
 import { PurchaseList } from '../purchase-list'
 import * as purchaseHooks from '@/hooks/use-purchases'
 import * as filterHooks from '@/hooks/use-purchase-filters'
@@ -19,7 +19,7 @@ describe('PurchaseList', () => {
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks()
-    
+
     // Default mock implementations
     mockUsePurchaseFiltersSpy.mockReturnValue({})
     mockUsePurchasePaginationSpy.mockReturnValue({ page: 1, limit: 20 })
@@ -29,14 +29,14 @@ describe('PurchaseList', () => {
       clearFilters: jest.fn(),
       setSort: jest.fn(),
       setPagination: jest.fn(),
-      resetPagination: jest.fn()
+      resetPagination: jest.fn(),
     })
     mockUseHasActiveFiltersSpy.mockReturnValue(false)
   })
 
   it('should render list of purchases when data is available', () => {
     mockUsePurchasesSpy.mockReturnValue(mockUsePurchases)
-    
+
     render(<PurchaseList />)
 
     // Should render all mock purchases
@@ -49,9 +49,9 @@ describe('PurchaseList', () => {
     mockUsePurchasesSpy.mockReturnValue({
       ...mockUsePurchases,
       isLoading: true,
-      data: undefined
+      data: undefined,
     })
-    
+
     render(<PurchaseList />)
 
     // Should show loading indicators
@@ -63,15 +63,15 @@ describe('PurchaseList', () => {
     mockUsePurchasesSpy.mockReturnValue({
       ...mockUsePurchases,
       isError: true,
-      error: new Error('Failed to fetch purchases')
+      error: new Error('Failed to fetch purchases'),
     })
-    
+
     render(<PurchaseList />)
 
     // Should show error message
     expect(screen.getByText(/error loading purchases/i)).toBeInTheDocument()
     expect(screen.getByText(/failed to fetch purchases/i)).toBeInTheDocument()
-    
+
     // Should show retry button
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
   })
@@ -87,11 +87,11 @@ describe('PurchaseList', () => {
           total: 0,
           totalPages: 0,
           hasNext: false,
-          hasPrev: false
-        }
-      }
+          hasPrev: false,
+        },
+      },
     })
-    
+
     render(<PurchaseList />)
 
     // Should show empty state
@@ -101,10 +101,10 @@ describe('PurchaseList', () => {
 
   it('should show filtered empty state when filters are applied but no results', () => {
     mockUsePurchaseFiltersSpy.mockReturnValue({
-      searchTerm: 'nonexistent'
+      searchTerm: 'nonexistent',
     })
     mockUseHasActiveFiltersSpy.mockReturnValue(true)
-    
+
     mockUsePurchasesSpy.mockReturnValue({
       ...mockUsePurchases,
       data: {
@@ -115,11 +115,11 @@ describe('PurchaseList', () => {
           total: 0,
           totalPages: 0,
           hasNext: false,
-          hasPrev: false
-        }
-      }
+          hasPrev: false,
+        },
+      },
     })
-    
+
     render(<PurchaseList />)
 
     // Should show filtered empty state
@@ -130,7 +130,7 @@ describe('PurchaseList', () => {
   it('should handle purchase card clicks when onPurchaseClick is provided', () => {
     mockUsePurchasesSpy.mockReturnValue(mockUsePurchases)
     const handlePurchaseClick = jest.fn()
-    
+
     render(<PurchaseList onPurchaseClick={handlePurchaseClick} />)
 
     // Click on the first purchase
@@ -151,11 +151,11 @@ describe('PurchaseList', () => {
           total: 50,
           totalPages: 3,
           hasNext: true,
-          hasPrev: false
-        }
-      }
+          hasPrev: false,
+        },
+      },
     })
-    
+
     render(<PurchaseList />)
 
     // Should show pagination controls
@@ -170,7 +170,7 @@ describe('PurchaseList', () => {
       clearFilters: jest.fn(),
       setSort: jest.fn(),
       setPagination: mockSetPagination,
-      resetPagination: jest.fn()
+      resetPagination: jest.fn(),
     })
 
     mockUsePurchasesSpy.mockReturnValue({
@@ -183,11 +183,11 @@ describe('PurchaseList', () => {
           total: 50,
           totalPages: 3,
           hasNext: true,
-          hasPrev: false
-        }
-      }
+          hasPrev: false,
+        },
+      },
     })
-    
+
     render(<PurchaseList />)
 
     // Click next page
@@ -199,14 +199,14 @@ describe('PurchaseList', () => {
 
   it('should retry loading when retry button is clicked', async () => {
     const mockRefetch = jest.fn().mockResolvedValue({})
-    
+
     mockUsePurchasesSpy.mockReturnValue({
       ...mockUsePurchases,
       isError: true,
       error: new Error('Network error'),
-      refetch: mockRefetch
+      refetch: mockRefetch,
     })
-    
+
     render(<PurchaseList />)
 
     // Click retry button
@@ -220,7 +220,7 @@ describe('PurchaseList', () => {
     const largePurchaseList = Array.from({ length: 100 }, (_, index) => ({
       ...mockPurchases[0],
       id: `purchase-${index}`,
-      merchantName: `Merchant ${index}`
+      merchantName: `Merchant ${index}`,
     }))
 
     mockUsePurchasesSpy.mockReturnValue({
@@ -233,23 +233,23 @@ describe('PurchaseList', () => {
           total: 100,
           totalPages: 1,
           hasNext: false,
-          hasPrev: false
-        }
-      }
+          hasPrev: false,
+        },
+      },
     })
-    
+
     render(<PurchaseList enableVirtualization />)
 
     // Should render virtual list container
     expect(screen.getByTestId('virtual-list')).toBeInTheDocument()
-    
+
     // Should not render all items at once (virtualization)
     expect(screen.queryByText('Merchant 50')).not.toBeInTheDocument()
   })
 
   it('should apply custom className', () => {
     mockUsePurchasesSpy.mockReturnValue(mockUsePurchases)
-    
+
     render(<PurchaseList className="custom-class" />)
 
     const listContainer = screen.getByTestId('purchase-list')
@@ -263,11 +263,11 @@ describe('PurchaseList', () => {
         ...mockUsePurchases.data!,
         pagination: {
           ...mockUsePurchases.data!.pagination,
-          total: 42
-        }
-      }
+          total: 42,
+        },
+      },
     })
-    
+
     render(<PurchaseList showCount />)
 
     expect(screen.getByText(/42 purchases/i)).toBeInTheDocument()
@@ -275,12 +275,12 @@ describe('PurchaseList', () => {
 
   it('should handle refresh functionality', async () => {
     const mockRefetch = jest.fn().mockResolvedValue({})
-    
+
     mockUsePurchasesSpy.mockReturnValue({
       ...mockUsePurchases,
-      refetch: mockRefetch
+      refetch: mockRefetch,
     })
-    
+
     render(<PurchaseList enableRefresh />)
 
     // Should show refresh button
@@ -292,7 +292,7 @@ describe('PurchaseList', () => {
 
   it('should be accessible with proper ARIA labels', () => {
     mockUsePurchasesSpy.mockReturnValue(mockUsePurchases)
-    
+
     render(<PurchaseList />)
 
     const listContainer = screen.getByTestId('purchase-list')

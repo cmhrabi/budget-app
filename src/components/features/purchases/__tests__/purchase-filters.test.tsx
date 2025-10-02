@@ -1,6 +1,6 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { render, expectToBeVisible } from '@/__tests__/utils/test-utils'
+import { render } from '@/__tests__/utils/test-utils'
 import { PurchaseFilters } from '../purchase-filters'
 import * as filterHooks from '@/hooks/use-purchase-filters'
 
@@ -17,13 +17,13 @@ const mockFilterActions = {
   clearFilters: jest.fn(),
   setSort: jest.fn(),
   setPagination: jest.fn(),
-  resetPagination: jest.fn()
+  resetPagination: jest.fn(),
 }
 
 describe('PurchaseFilters', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     // Default mock implementations
     mockUsePurchaseFiltersSpy.mockReturnValue({})
     mockUsePurchaseFilterActionsSpy.mockReturnValue(mockFilterActions)
@@ -76,7 +76,7 @@ describe('PurchaseFilters', () => {
 
     await waitFor(() => {
       expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
-        searchTerm: 'coffee'
+        searchTerm: 'coffee',
       })
     })
   })
@@ -86,19 +86,22 @@ describe('PurchaseFilters', () => {
     render(<PurchaseFilters />)
 
     const searchInput = screen.getByPlaceholderText(/search purchases/i)
-    
+
     // Clear any initial calls
     mockFilterActions.setFilters.mockClear()
-    
+
     // Type quickly
     await user.type(searchInput, 'coffee shop')
 
     // Should call after debounce delay
-    await waitFor(() => {
-      expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
-        searchTerm: 'coffee shop'
-      })
-    }, { timeout: 1000 })
+    await waitFor(
+      () => {
+        expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
+          searchTerm: 'coffee shop',
+        })
+      },
+      { timeout: 1000 }
+    )
 
     // Should only have been called once for the final value, not for each keystroke
     expect(mockFilterActions.setFilters).toHaveBeenCalledTimes(1)
@@ -128,16 +131,16 @@ describe('PurchaseFilters', () => {
     await user.click(foodCategory)
 
     expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
-      categories: ['food-dining']
+      categories: ['food-dining'],
     })
   })
 
   it('should handle multiple category selections', async () => {
     const user = userEvent.setup()
     mockUsePurchaseFiltersSpy.mockReturnValue({
-      categories: ['food-dining']
+      categories: ['food-dining'],
     })
-    
+
     render(<PurchaseFilters />)
 
     const categoryButton = screen.getByRole('button', { name: /categories/i })
@@ -147,7 +150,7 @@ describe('PurchaseFilters', () => {
     await user.click(transportationCategory)
 
     expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
-      categories: ['food-dining', 'transportation']
+      categories: ['food-dining', 'transportation'],
     })
   })
 
@@ -183,8 +186,8 @@ describe('PurchaseFilters', () => {
     expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
       dateRange: {
         start: new Date('2023-01-01'),
-        end: new Date('2023-01-31')
-      }
+        end: new Date('2023-01-31'),
+      },
     })
   })
 
@@ -219,8 +222,8 @@ describe('PurchaseFilters', () => {
     expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
       amountRange: {
         min: 10,
-        max: 100
-      }
+        max: 100,
+      },
     })
   })
 
@@ -248,19 +251,19 @@ describe('PurchaseFilters', () => {
     await user.click(cashOption)
 
     expect(mockFilterActions.setFilters).toHaveBeenCalledWith({
-      paymentMethods: ['cash']
+      paymentMethods: ['cash'],
     })
   })
 
   it('should show clear filters button when filters are active', () => {
     mockUseHasActiveFiltersSpy.mockReturnValue(true)
     mockUseFilterCountSpy.mockReturnValue(3)
-    
+
     render(<PurchaseFilters />)
 
     const clearButton = screen.getByRole('button', { name: /clear filters/i })
     expect(clearButton).toBeInTheDocument()
-    
+
     // Should show filter count
     expect(screen.getByText('3')).toBeInTheDocument()
   })
@@ -269,7 +272,7 @@ describe('PurchaseFilters', () => {
     const user = userEvent.setup()
     mockUseHasActiveFiltersSpy.mockReturnValue(true)
     mockUseFilterCountSpy.mockReturnValue(2)
-    
+
     render(<PurchaseFilters />)
 
     const clearButton = screen.getByRole('button', { name: /clear filters/i })
@@ -281,7 +284,7 @@ describe('PurchaseFilters', () => {
   it('should not show clear filters button when no filters are active', () => {
     mockUseHasActiveFiltersSpy.mockReturnValue(false)
     mockUseFilterCountSpy.mockReturnValue(0)
-    
+
     render(<PurchaseFilters />)
 
     const clearButton = screen.queryByRole('button', { name: /clear filters/i })
@@ -294,12 +297,12 @@ describe('PurchaseFilters', () => {
       categories: ['food-dining'],
       dateRange: {
         start: new Date('2023-01-01'),
-        end: new Date('2023-01-31')
-      }
+        end: new Date('2023-01-31'),
+      },
     })
     mockUseHasActiveFiltersSpy.mockReturnValue(true)
     mockUseFilterCountSpy.mockReturnValue(3)
-    
+
     render(<PurchaseFilters />)
 
     // Should show filter indicators on buttons
@@ -314,10 +317,10 @@ describe('PurchaseFilters', () => {
     // Should be able to tab through filter buttons
     const searchInput = screen.getByPlaceholderText(/search purchases/i)
     const categoryButton = screen.getByRole('button', { name: /categories/i })
-    
+
     await user.tab()
     expect(searchInput).toHaveFocus()
-    
+
     await user.tab()
     expect(categoryButton).toHaveFocus()
   })
@@ -353,17 +356,17 @@ describe('PurchaseFilters', () => {
 
   it('should preserve filter state when component re-renders', () => {
     mockUsePurchaseFiltersSpy.mockReturnValue({
-      searchTerm: 'preserved search'
+      searchTerm: 'preserved search',
     })
-    
+
     const { rerender } = render(<PurchaseFilters />)
-    
+
     const searchInput = screen.getByPlaceholderText(/search purchases/i)
     expect(searchInput).toHaveValue('preserved search')
-    
+
     // Re-render component
     rerender(<PurchaseFilters />)
-    
+
     expect(searchInput).toHaveValue('preserved search')
   })
 })

@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const React = require('react')
 
 module.exports = {
-  Auth0Provider: ({ children }) => React.createElement('div', { 'data-testid': 'auth0-provider' }, children),
+  Auth0Provider: ({ children }) =>
+    React.createElement('div', { 'data-testid': 'auth0-provider' }, children),
   useUser: jest.fn(() => ({
     user: null,
     error: null,

@@ -11,7 +11,6 @@ import {
   UserDataError,
   UserNotAuthenticatedError,
   UserDataNotFoundError,
-  StorageQuotaExceededError,
 } from '../user-data-service'
 import type { UserProfile, UserPreferences } from '@/types'
 

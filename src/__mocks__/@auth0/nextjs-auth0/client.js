@@ -1,5 +1,4 @@
-const React = require('react')
-
+/* eslint-disable @typescript-eslint/no-var-requires */
 module.exports = {
   UserProvider: ({ children }) => children,
   useUser: () => ({

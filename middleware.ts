@@ -1,10 +1,8 @@
-import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { auth0 } from './src/lib/auth0'
 
-// Placeholder middleware - Auth0 route protection will be implemented in Phase 2
-// For now, all routes are accessible to allow development to continue
-export function middleware(_request: NextRequest) {
-  return NextResponse.next()
+export async function middleware(request: NextRequest) {
+  return await auth0.middleware(request)
 }
 
 export const config = {
