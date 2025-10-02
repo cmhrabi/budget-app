@@ -1,5 +1,6 @@
 export interface Purchase {
   id: string
+  userId: string // Auth0 user ID - links purchase to authenticated user
   amount: number
   currency: 'CAD' | 'USD'
   description: string

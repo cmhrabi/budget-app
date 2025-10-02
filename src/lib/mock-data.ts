@@ -1,6 +1,50 @@
 import type { Purchase } from '@/types'
 import { DEFAULT_CATEGORIES, DEFAULT_PAYMENT_METHODS } from '@/lib/constants'
 
+/**
+ * Seeded Random Number Generator
+ * Uses a simple Linear Congruential Generator (LCG) algorithm
+ * to generate deterministic pseudo-random numbers based on a seed
+ */
+class SeededRandom {
+  private seed: number
+
+  constructor(seed: number) {
+    this.seed = seed % 2147483647
+    if (this.seed <= 0) this.seed += 2147483646
+  }
+
+  next(): number {
+    this.seed = (this.seed * 16807) % 2147483647
+    return (this.seed - 1) / 2147483646
+  }
+
+  nextInt(min: number, max: number): number {
+    return Math.floor(this.next() * (max - min + 1)) + min
+  }
+
+  nextFloat(min: number, max: number): number {
+    return this.next() * (max - min) + min
+  }
+
+  choice<T>(array: T[]): T {
+    return array[this.nextInt(0, array.length - 1)]
+  }
+}
+
+/**
+ * Generate a seed from a user ID string
+ */
+function generateSeedFromUserId(userId: string): number {
+  let hash = 0
+  for (let i = 0; i < userId.length; i++) {
+    const char = userId.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  return Math.abs(hash)
+}
+
 // Sample merchant names for different categories
 const MERCHANTS_BY_CATEGORY = {
   'food-dining': [
@@ -91,54 +135,61 @@ const SAMPLE_TAGS = [
   'business', 'personal', 'gift', 'travel', 'home'
 ]
 
-export function generateMockPurchases(count: number = 50): Purchase[] {
+/**
+ * Generate deterministic mock purchases for a user
+ * @param userId - Auth0 user ID for seeding random generation
+ * @param count - Number of purchases to generate
+ */
+export function generateMockPurchasesForUser(userId: string, count: number = 50): Purchase[] {
+  const seed = generateSeedFromUserId(userId)
+  const rng = new SeededRandom(seed)
   const purchases: Purchase[] = []
   const now = new Date()
 
   for (let i = 0; i < count; i++) {
     // Generate random date within the last 6 months
-    const daysAgo = Math.floor(Math.random() * 180)
+    const daysAgo = rng.nextInt(0, 180)
     const date = new Date(now)
     date.setDate(date.getDate() - daysAgo)
 
     // Pick random category
-    const category = DEFAULT_CATEGORIES[Math.floor(Math.random() * DEFAULT_CATEGORIES.length)]
-    
+    const category = rng.choice(DEFAULT_CATEGORIES)
+
     // Pick merchant based on category
     const categoryMerchants = MERCHANTS_BY_CATEGORY[category.id as keyof typeof MERCHANTS_BY_CATEGORY] || MERCHANTS_BY_CATEGORY.other
-    const merchantName = categoryMerchants[Math.floor(Math.random() * categoryMerchants.length)]
+    const merchantName = rng.choice(categoryMerchants)
 
     // Pick random payment method
-    const paymentMethod = DEFAULT_PAYMENT_METHODS[Math.floor(Math.random() * DEFAULT_PAYMENT_METHODS.length)]
+    const paymentMethod = rng.choice(DEFAULT_PAYMENT_METHODS)
 
     // Generate amount based on category (some categories tend to have higher amounts)
     let amount: number
     switch (category.id) {
       case 'travel':
       case 'insurance':
-        amount = Math.random() * 2000 + 100 // $100 - $2100
+        amount = rng.nextFloat(100, 2100) // $100 - $2100
         break
       case 'home-garden':
       case 'education':
-        amount = Math.random() * 500 + 50 // $50 - $550
+        amount = rng.nextFloat(50, 550) // $50 - $550
         break
       case 'food-dining':
       case 'transportation':
-        amount = Math.random() * 150 + 5 // $5 - $155
+        amount = rng.nextFloat(5, 155) // $5 - $155
         break
       default:
-        amount = Math.random() * 300 + 10 // $10 - $310
+        amount = rng.nextFloat(10, 310) // $10 - $310
     }
     amount = Math.round(amount * 100) / 100 // Round to 2 decimals
 
     // Pick random description
-    const description = SAMPLE_DESCRIPTIONS[Math.floor(Math.random() * SAMPLE_DESCRIPTIONS.length)]
+    const description = rng.choice(SAMPLE_DESCRIPTIONS)
 
     // Generate random tags (0-3 tags)
-    const tagCount = Math.floor(Math.random() * 4)
+    const tagCount = rng.nextInt(0, 3)
     const tags: string[] = []
     for (let j = 0; j < tagCount; j++) {
-      const tag = SAMPLE_TAGS[Math.floor(Math.random() * SAMPLE_TAGS.length)]
+      const tag = rng.choice(SAMPLE_TAGS)
       if (!tags.includes(tag)) {
         tags.push(tag)
       }
@@ -146,22 +197,23 @@ export function generateMockPurchases(count: number = 50): Purchase[] {
 
     // Generate metadata based on category
     const metadata: any = {}
-    if (category.id === 'food-dining' && Math.random() > 0.7) {
+    if (category.id === 'food-dining' && rng.next() > 0.7) {
       metadata.location = {
         city: 'Toronto',
         province: 'ON',
         country: 'Canada'
       }
     }
-    if (Math.random() > 0.8) {
+    if (rng.next() > 0.8) {
       metadata.isRecurring = true
-      metadata.recurringFrequency = ['monthly', 'weekly', 'bi-weekly'][Math.floor(Math.random() * 3)]
+      metadata.recurringFrequency = rng.choice(['monthly', 'weekly', 'bi-weekly'])
     }
 
     const purchase: Purchase = {
-      id: `mock_${i}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `mock_${userId}_${i}_${Date.now()}`,
+      userId, // Link purchase to user
       amount,
-      currency: Math.random() > 0.9 ? 'USD' : 'CAD', // 90% CAD, 10% USD
+      currency: rng.next() > 0.9 ? 'USD' : 'CAD', // 90% CAD, 10% USD
       description,
       merchantName,
       category,
@@ -178,6 +230,15 @@ export function generateMockPurchases(count: number = 50): Purchase[] {
 
   // Sort by date (newest first)
   return purchases.sort((a, b) => b.date.getTime() - a.date.getTime())
+}
+
+/**
+ * Generate mock purchases without user scoping (legacy function for backward compatibility)
+ * @deprecated Use generateMockPurchasesForUser instead
+ */
+export function generateMockPurchases(count: number = 50): Purchase[] {
+  // Use a default user ID for non-authenticated scenarios
+  return generateMockPurchasesForUser('anonymous', count)
 }
 
 export function generateRandomPurchase(): Purchase {

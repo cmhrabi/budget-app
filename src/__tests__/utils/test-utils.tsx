@@ -23,6 +23,7 @@ export const mockPaymentMethod: PaymentMethod = {
 
 export const mockPurchase: Purchase = {
   id: 'purchase-1',
+  userId: 'auth0|test-user', // Added userId field
   amount: 45.67,
   currency: 'CAD',
   description: 'Lunch at The Keg',

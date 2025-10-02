@@ -3,8 +3,8 @@ import {
   PurchaseNotFoundError,
   PurchaseValidationError,
 } from './purchase-service'
-import { generateMockPurchases } from '@/lib/mock-data'
-import { STORAGE_KEYS } from '@/lib/constants'
+import { generateMockPurchasesForUser } from '@/lib/mock-data'
+import { getUserStorageKey, UserNotAuthenticatedError } from './user-data-service'
 import type {
   Purchase,
   CreatePurchaseRequest,
@@ -17,14 +17,38 @@ import type {
 
 export class MockPurchaseService implements PurchaseService {
   private purchases: Purchase[] = []
+  private userId: string | null = null
 
-  constructor() {
+  constructor(userId?: string) {
+    if (userId) {
+      this.setUserId(userId)
+    }
+  }
+
+  /**
+   * Set the user ID for scoping all data operations
+   */
+  setUserId(userId: string): void {
+    this.userId = userId
     this.loadPurchases()
   }
 
+  /**
+   * Get the current user ID
+   */
+  private ensureUserId(): string {
+    if (!this.userId) {
+      throw new UserNotAuthenticatedError()
+    }
+    return this.userId
+  }
+
   private loadPurchases(): void {
+    const userId = this.ensureUserId()
+
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEYS.purchases)
+      const key = getUserStorageKey(userId, 'purchases')
+      const stored = localStorage.getItem(key)
       if (stored) {
         try {
           this.purchases = JSON.parse(stored).map((p: any) => ({
@@ -33,21 +57,26 @@ export class MockPurchaseService implements PurchaseService {
             createdAt: new Date(p.createdAt),
             updatedAt: new Date(p.updatedAt),
           }))
+          // Filter by userId for extra security
+          this.purchases = this.purchases.filter(p => p.userId === userId)
         } catch (error) {
           console.warn('Failed to load purchases from localStorage:', error)
-          this.purchases = generateMockPurchases()
+          this.purchases = generateMockPurchasesForUser(userId)
         }
       } else {
-        this.purchases = generateMockPurchases()
+        this.purchases = generateMockPurchasesForUser(userId)
       }
     } else {
-      this.purchases = generateMockPurchases()
+      this.purchases = generateMockPurchasesForUser(userId)
     }
   }
 
   private savePurchases(): void {
+    const userId = this.ensureUserId()
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.purchases, JSON.stringify(this.purchases))
+      const key = getUserStorageKey(userId, 'purchases')
+      localStorage.setItem(key, JSON.stringify(this.purchases))
     }
   }
 
@@ -104,6 +133,8 @@ export class MockPurchaseService implements PurchaseService {
   async createPurchase(request: CreatePurchaseRequest): Promise<Purchase> {
     await new Promise((resolve) => setTimeout(resolve, 200))
 
+    const userId = this.ensureUserId()
+
     // Validate request
     if (!request.description || !request.merchantName || !request.categoryId) {
       throw new PurchaseValidationError('Missing required fields')
@@ -112,6 +143,7 @@ export class MockPurchaseService implements PurchaseService {
     const now = new Date()
     const purchase: Purchase = {
       id: this.generateId(),
+      userId, // Link purchase to authenticated user
       amount: request.amount,
       currency: request.currency,
       description: request.description,
@@ -365,7 +397,8 @@ export class MockPurchaseService implements PurchaseService {
   }
 
   seedWithMockData(): void {
-    this.purchases = generateMockPurchases()
+    const userId = this.ensureUserId()
+    this.purchases = generateMockPurchasesForUser(userId)
     this.savePurchases()
   }
 }

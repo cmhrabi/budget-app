@@ -85,6 +85,21 @@ export interface CanadianBankInstitution {
   }
 }
 
+// User profile model
+export interface UserProfile {
+  userId: string // Auth0 user ID
+  email: string
+  name?: string
+  picture?: string
+  createdAt: Date
+  lastUpdatedAt: Date
+  metadata?: {
+    onboardingCompleted?: boolean
+    lastLoginAt?: Date
+    preferences?: UserPreferences
+  }
+}
+
 // User preferences and settings
 export interface UserPreferences {
   defaultCurrency: Currency
