@@ -157,3 +157,13 @@ export const expectToBeVisible = (element: Element) => {
 export const expectToHaveClass = (element: Element, className: string) => {
   expect(element).toHaveClass(className)
 }
+
+// This is a test utilities file - adding a simple test to satisfy Jest
+describe('test-utils', () => {
+  it('exports mock data correctly', () => {
+    expect(mockPurchase).toBeDefined()
+    expect(mockPurchases).toBeDefined()
+    expect(mockCategory).toBeDefined()
+    expect(mockPaymentMethod).toBeDefined()
+  })
+})
